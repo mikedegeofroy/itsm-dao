@@ -1,8 +1,8 @@
 version: '3'
 services:
-  centos7:
-    image: centos:7
-    container_name: centos7_container
+  debian11:
+    build: .
+    container_name: debian11_container
     command: /bin/bash
     volumes:
       - ./data:/data

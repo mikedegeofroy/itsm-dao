@@ -7,7 +7,7 @@ down:
 	docker compose down
 
 shell:
-	docker exec -it centos7_container /bin/bash
+	docker exec -it debian11_container /bin/bash
 
 rebuild:
 	docker compose down
