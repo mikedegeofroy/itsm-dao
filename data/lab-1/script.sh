@@ -1,79 +1,80 @@
 #!/bin/bash
 
-# Function to show network card details
 show_network_card_info() {
+    printf "\n"
     echo "Network Card Information"
     echo "------------------------"
-    # Get interface name (assuming eth0, you can modify as needed)
-    iface=$(ip -o -4 route show to default | awk '{print $5}')
     
+    iface=$(ifconfig | grep -o '^[^ ]*' | head -n 1 | cut -d: -f1)
+
     if [ -z "$iface" ]; then
         echo "No active network interface found!"
         return
     fi
     
     echo "Interface: $iface"
-    # Show NIC model, speed, duplex, and link status
-    ethtool $iface | grep "Speed\|Duplex\|Link detected"
-    
-    # Show MAC address
-    echo "MAC Address: $(cat /sys/class/net/$iface/address)"
+    ifconfig $iface | grep -E "inet |ether"
 }
 
-# Function to show current IPv4 configuration
+
 show_ipv4_config() {
+    printf "\n"
     echo "IPv4 Configuration"
     echo "------------------"
-    
-    iface=$(ip -o -4 route show to default | awk '{print $5}')
-    
+
+    iface=$(ifconfig | grep -o '^[^ ]*' | head -n 1)
+
     if [ -z "$iface" ]; then
         echo "No active network interface found!"
         return
     fi
-    
-    ip addr show $iface | grep "inet " | awk '{print "IP Address: " $2}'
-    ip route | grep default | awk '{print "Gateway: " $3}'
+
+    ifconfig $iface | grep 'inet ' | awk '{print "IP Address: " $2 "\nNetmask: " $4}'
+
+    route -n | grep 'UG[ \t]' | awk '{print "Gateway: " $2}'
+
     grep "nameserver" /etc/resolv.conf | awk '{print "DNS: " $2}'
 }
 
-# Function to configure network according to scenario #1
 configure_scenario_1() {
-    echo "Configuring network for scenario #1"
-    iface=$(ip -o -4 route show to default | awk '{print $5}')
+    printf "\n"
+    echo "Configuring network for static IP (Scenario #1)"
     
+    iface=$(ifconfig | grep -o '^[^ ]*' | head -n 1)
+
     if [ -z "$iface" ]; then
         echo "No active network interface found!"
         return
     fi
-    
-    # Set temporary IP (modify this according to your needs)
-    sudo ip addr flush dev $iface
-    sudo ip addr add 192.168.1.100/24 dev $iface
-    sudo ip route add default via 192.168.1.1
-    
-    echo "Temporary network configuration applied for Scenario #1"
+
+    ifconfig $iface 10.100.0.2 netmask 255.255.255.0 up
+
+    route add default gw 10.100.0.1
+
+    echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null
+
+    echo "Static network configuration applied for Scenario #1"
 }
 
-# Function to configure network according to scenario #2
 configure_scenario_2() {
-    echo "Configuring network for scenario #2"
-    iface=$(ip -o -4 route show to default | awk '{print $5}')
+    printf "\n"
+    echo "Configuring network for dynamic IP (Scenario #2)"
     
+    iface=$(ifconfig | grep -o '^[^ ]*' | head -n 1)
+
     if [ -z "$iface" ]; then
         echo "No active network interface found!"
         return
     fi
-    
-    # Set temporary IP (modify this according to your needs)
-    sudo ip addr flush dev $iface
-    sudo ip addr add 192.168.0.200/24 dev $iface
-    sudo ip route add default via 192.168.0.1
-    
-    echo "Temporary network configuration applied for Scenario #2"
+
+    ifconfig $iface down
+    ifconfig $iface up
+    dhclient $iface
+
+    echo "Dynamic network configuration (DHCP) applied for Scenario #2"
 }
 
-# Main menu
+# Menu template
 while true; do
     echo ""
     echo "Select an option:"
