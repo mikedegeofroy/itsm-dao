@@ -1,17 +1,25 @@
-# Makefile
+up-debian:
+	docker compose up -d debian11
 
-up:
-	docker compose up -d
+up-centos:
+	docker compose up -d centos7
 
 down:
 	docker compose down
 
-shell:
+shell-debian:
 	docker exec -it debian11_container /bin/bash
 
-rebuild:
-	docker compose down
-	docker compose up --build -d
+shell-centos:
+	docker exec -it centos7_container /bin/bash
+
+rebuild-debian:
+	docker compose down debian11
+	docker compose up --build -d debian11
+
+rebuild-centos:
+	docker compose down centos7
+	docker compose up --build -d centos7
 
 logs:
 	docker compose logs -f
