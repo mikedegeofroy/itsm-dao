@@ -14,8 +14,12 @@ services:
       context: .
       dockerfile: ./dockerfiles/Dockerfile.centos
     container_name: centos7_container
-    command: /bin/bash
+    privileged: true
+    command: 
+      - /bin/bash
     volumes:
       - ./data:/data
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /run
     tty: true
     stdin_open: true
