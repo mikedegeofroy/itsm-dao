@@ -7,6 +7,9 @@ services:
     command: /bin/bash
     volumes:
       - ./data:/data
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     tty: true
     stdin_open: true
   centos7:
