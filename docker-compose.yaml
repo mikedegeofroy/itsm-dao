@@ -7,6 +7,19 @@ services:
     command: /bin/bash
     volumes:
       - ./data:/data
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    tty: true
+    stdin_open: true
+  centos7:
+    build: 
+      context: .
+      dockerfile: ./dockerfiles/Dockerfile.centos
+    container_name: centos7_container
+    command: /bin/bash
+    volumes:
+      - ./data:/data
     tty: true
     stdin_open: true
   centos7:
