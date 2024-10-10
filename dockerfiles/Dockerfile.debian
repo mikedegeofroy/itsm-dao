@@ -1,6 +1,9 @@
 FROM debian:11
 
 RUN apt update
-RUN apt install -y net-tools netplan.io pciutils
+RUN apt install -y sudo nano net-tools netplan.io network-manager dbus systemd systemd-sysv
+COPY /data/lab-1 /data/lab-1
 
-CMD [ "/bin/bash" ]
+RUN echo "root:root" | chpasswd
+
+CMD [ "/bin/bash" "/ns/net" ]
