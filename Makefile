@@ -3,6 +3,9 @@ up-debian:
 
 up-centos:
 	docker compose up -d centos7
+  
+run-centos: # for correct working NetworkManager
+	docker run --rm --privileged  -ti -e container=docker  -v /sys/fs/cgroup:/sys/fs/cgroup  itsm-dao-centos7 /usr/sbin/init
 
 down:
 	docker compose down
