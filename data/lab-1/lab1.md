@@ -185,7 +185,7 @@ nmcli connection up br0
 6. С помощью команды `ip link show` узнали MAC-адрес виртуального интерфейса
 ![MAC-address of virtual interface](assets/mac-address-virtual-interface.png)
 
-## Часть 3.
+## Часть 3. Работа с реальными интерфейсами Linux Debian 11 через netpaln
 1. Добавили YAML файл 01-network-manager-all.yaml в директорию /etc/netplan
 Содержимое файла:
 ``` yaml
@@ -209,7 +209,56 @@ network:
 3. Выводим arp кэш по команде `ip neigh`
 ![Check arp cache](assets/arp-cache.png)
 
+
 ## Часть 4. Настройка объединения реальных сетевых интерфейсов в Linux
+```bash
+flsmod | grep bonding
+```
+
+```bash
+modprobe bonding
+```
+
+```yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s3:
+      dhcp4: no
+    enp0s8:
+      dhcp4: no
+  bonds:
+    bond007:
+      dhcp4: yes
+      interfaces:
+        - enp0s3
+        - enp0s8
+      parameters:
+        mode: balance-rr
+        primary: enp0s3
+```
+
+```bash
+netplan apply
+```
+
+![](./assets/output-p-4-5.jpeg)
+![](./assets/output-p-4-6.jpeg)
+
+
+```bash
+#!/bin/bash
+
+while true; do
+  
+  awk 'NR>2 {iface=$1; gsub(":", "", iface); rx=$2; tx=$10; print "["strftime("%Y-%m-%d %H:%M:%S")"] Interface: "   iface ", RX: " rx ", TX: " tx}' /proc/net/dev
+  
+  sleep 5
+done
+```
+
+![](./assets/output-p-4-7.jpeg)
 
 ## QA
 С помощью утилиты `ip`:
@@ -261,53 +310,3 @@ As a Red Hat Enterprise Linux user, you can create and use dummy network interfa
 and testing purposes. A dummy interface provides a device to route packets without actually 
 transmitting them. It enables you to create additional loopback-like devices managed by NetworkManager 
 and makes an inactive SLIP (Serial Line Internet Protocol) address look like a real address for local programs.
-
-## Часть 4. Настройка объединения реальных сетевых интерфейсов в Linux
-```bash
-flsmod | grep bonding
-```
-
-```bash
-modprobe bonding
-```
-
-```yaml
-network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    enp0s3:
-      dhcp4: no
-    enp0s8:
-      dhcp4: no
-  bonds:
-    bond007:
-      dhcp4: yes
-      interfaces:
-        - enp0s3
-        - enp0s8
-      parameters:
-        mode: balance-rr
-        primary: enp0s3
-```
-
-```bash
-netplan apply
-```
-
-![](./assets/output-p-4-5.jpeg)
-![](./assets/output-p-4-6.jpeg)
-
-
-```bash
-#!/bin/bash
-
-while true; do
-  
-  awk 'NR>2 {iface=$1; gsub(":", "", iface); rx=$2; tx=$10; print "["strftime("%Y-%m-%d %H:%M:%S")"] Interface: "   iface ", RX: " rx ", TX: " tx}' /proc/net/dev
-  
-  sleep 5
-done
-```
-
-![](./assets/output-p-4-7.jpeg)
