@@ -18,4 +18,4 @@ VOLUME [ "/sys/fs/cgroup" ]
 
 RUN systemctl enable NetworkManager && systemctl start NetworkManager
 
-CMD "/bin/bash"
+CMD "/usr/sbin/init" "/bin/bash"
