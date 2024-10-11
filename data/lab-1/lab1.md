@@ -138,3 +138,51 @@ done
 ## Часть 3.
 
 ## Часть 4. Настройка объединения реальных сетевых интерфейсов в Linux
+```bash
+flsmod | grep bonding
+```
+
+```bash
+modprobe bonding
+```
+
+```yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s3:
+      dhcp4: no
+    enp0s8:
+      dhcp4: no
+  bonds:
+    bond007:
+      dhcp4: yes
+      interfaces:
+        - enp0s3
+        - enp0s8
+      parameters:
+        mode: balance-rr
+        primary: enp0s3
+```
+
+```bash
+netplan apply
+```
+
+![](./assets/output-p-4-5.jpeg)
+![](./assets/output-p-4-6.jpeg)
+
+
+```bash
+#!/bin/bash
+
+while true; do
+  
+  awk 'NR>2 {iface=$1; gsub(":", "", iface); rx=$2; tx=$10; print "["strftime("%Y-%m-%d %H:%M:%S")"] Interface: "   iface ", RX: " rx ", TX: " tx}' /proc/net/dev
+  
+  sleep 5
+done
+```
+
+![](./assets/output-p-4-7.jpeg)
