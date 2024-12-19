@@ -156,7 +156,7 @@ ipv4.method manual
 ```
 nmcli connection up static-connection
 ```
-![Static connection proof](assets/static-connection.png.png)
+![Static connection proof](assets/static-connection.png)
 
 (Что значит enp0s3:)
 _enp0s3: The network interface name as a string. The "en" stands for ethernet, "p0" is the bus number of the ethernet card, and "s3" is the slot number._
