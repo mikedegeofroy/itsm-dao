@@ -156,7 +156,7 @@ ipv4.method manual
 ```
 nmcli connection up static-connection
 ```
-![Static connection proof](assets/static-connection.png.png)
+![Static connection proof](assets/static-connection.png)
 
 (Что значит enp0s3:)
 _enp0s3: The network interface name as a string. The "en" stands for ethernet, "p0" is the bus number of the ethernet card, and "s3" is the slot number._
@@ -185,7 +185,7 @@ nmcli connection up br0
 6. С помощью команды `ip link show` узнали MAC-адрес виртуального интерфейса
 ![MAC-address of virtual interface](assets/mac-address-virtual-interface.png)
 
-## Часть 3.
+## Часть 3. Работа с реальными интерфейсами Linux Debian 11 через netpaln
 1. Добавили YAML файл 01-network-manager-all.yaml в директорию /etc/netplan
 Содержимое файла:
 ``` yaml
@@ -209,4 +209,104 @@ network:
 3. Выводим arp кэш по команде `ip neigh`
 ![Check arp cache](assets/arp-cache.png)
 
+
 ## Часть 4. Настройка объединения реальных сетевых интерфейсов в Linux
+```bash
+flsmod | grep bonding
+```
+
+```bash
+modprobe bonding
+```
+
+```yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s3:
+      dhcp4: no
+    enp0s8:
+      dhcp4: no
+  bonds:
+    bond007:
+      dhcp4: yes
+      interfaces:
+        - enp0s3
+        - enp0s8
+      parameters:
+        mode: balance-rr
+        primary: enp0s3
+```
+
+```bash
+netplan apply
+```
+
+![](./assets/output-p-4-5.jpeg)
+![](./assets/output-p-4-6.jpeg)
+
+
+```bash
+#!/bin/bash
+
+while true; do
+  
+  awk 'NR>2 {iface=$1; gsub(":", "", iface); rx=$2; tx=$10; print "["strftime("%Y-%m-%d %H:%M:%S")"] Interface: "   iface ", RX: " rx ", TX: " tx}' /proc/net/dev
+  
+  sleep 5
+done
+```
+
+![](./assets/output-p-4-7.jpeg)
+
+## QA
+С помощью утилиты `ip`:
+1. _назначить новый IPv4 адрес_: 
+`ip addr add xx.xxx.x.x/yy dev enp0s3`
+2. _назначить новый MAC адрес_: Сначала нужно временно остановить устройство, затем назначить новый MAC-адрес и потом снова поднять
+``` bash
+sudo ip link set dev wlan1 down
+sudo ip link set dev wlan1 address 12:e1:7d:f8:a3:e5
+sudo ip link set dev wlan1 up
+```
+3. _назначить новый gateway_: 
+Сначала удаяем текущий, затем добавляем новый
+``` bash
+route del default
+sudo route delete default gw IP-Address Adapter
+sudo route add default gw IP-Address Adapter
+```
+
+В случае, если несколько дефолтных gateway:
+```bash
+sudo route delete default gw IP-Address Adapter
+```
+
+4. _вывести информацию arp кэше_: 
+`ip neigh`
+5. _очистить arp кэш_: 
+`ip -s -s neigh flush all`
+Двойной флаг `-s` означает удаление и ARP и NDISC кэша
+6. _включить интерфейс_: 
+`nmcli connection up DEVICE_NAME`
+7. _выключить интерфейс_: 
+`nmcli connection down DEVICE_NAME`
+8. _Как с помощью nmcli назначить на интерфейс статический IP адрес, маску и настроить default gateway_:
+9. _Как с помощью netplan назначить на интерфейс статический IP адрес,
+маску и настроить default gateway_: 
+`nmcli con add type ethernet ifname enp0s3 con-name CONNECTION_NAME ip4 192.168.1.100/24 gw4 192.168.1.1`
+10. _Какие режимы bonding стандартно существую в Linux? Опишите их назначение, возможности по отказоустойчивости и необходимость поддержки со стороны оборудования_: Обеспечение отказоустойчивости и увеличение пропускной способности в результате объединения сетевых интерфейсов и передачи/принятия пакетов по определённым стратегиям - либо “по кругу”,
+при отказе 1 узла остальные продолжают функционировать, либо один работает, остальные просто на за замену (резервные), либо трафик идёт на все подряд - broadcast (теряем смысл увел пропускной способности), либо трафик распределяется по кэшу относительно мак адресов устройств.
+11. _Какие существуют и чем отличаются режимы работы адаптера (duplex)_:
+**Full-duplex mode** (full). Interfaces operating in this mode can send and receive packets simultaneously.
+**Half-duplex mode** (half). Interfaces operating in this mode cannot send and receive simultaneously.
+**Auto-negotiation mode** (auto). Interfaces operating in this mode negotiate a duplex mode with their peers.
+12. _Какой, по-вашему, практический смысл в возможности назначения нескольких IP адресов на один интерфейс_:
+Для того, чтобы сервер мог принимать запросы от нескольких приложений
+13. _Какой, по-вашему, практический смысл в возможности создания
+виртуальных интерфейсов?_:
+As a Red Hat Enterprise Linux user, you can create and use dummy network interfaces for debugging 
+and testing purposes. A dummy interface provides a device to route packets without actually 
+transmitting them. It enables you to create additional loopback-like devices managed by NetworkManager 
+and makes an inactive SLIP (Serial Line Internet Protocol) address look like a real address for local programs.
