@@ -35,6 +35,15 @@ network 192.168.1.64
 
 <img width="612" alt="image" src="https://github.com/user-attachments/assets/8c32bcaf-82f3-42af-9851-62bca3b54af9" />
 
+```
+      192.168.1.0/27 is subnetted, 5 subnets
+R         192.168.1.0 [120/1] via 192.168.1.33, 00:00:29, FastEthernet0/0
+C         192.168.1.32 is directly connected, FastEthernet0/0
+C         192.168.1.64 is directly connected, FastEthernet1/0
+R         192.168.1.96 [120/1] via 192.168. 1.66, 00:00:19, FastEthernet1/0
+R         192.168.1.128 [120/1] via 192.168.1.67, 00:00:17, FastEthernet1/0 
+```
+
 ## AS 100
 ```
 enable
