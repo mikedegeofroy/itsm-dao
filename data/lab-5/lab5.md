@@ -46,6 +46,7 @@ R         192.168.1.128 [120/1] via 192.168.1.67, 00:00:17, FastEthernet1/0
 enable
 configure terminal
 ip route 192.168.0.0 255.255.255.0 Null0
+
 router bgp 100
 neighbor 10.0.0.10 remote-as 101
 neighbor 10.0.0.2 remote-as 102
@@ -57,30 +58,34 @@ network 192.168.0.0 mask 255.255.0.0
 ```
 enable
 configure terminal
-ip route 192.168.1.0 255.255.255.0 Null0
+
 router rip
 passive-interface  FastEthernet6/0
 passive-interface  FastEthernet7/0
 passive-interface  FastEthernet8/0
+ip route 192.168.1.0 255.255.255.0 Null0
 default-information originate
 exit
+
 router bgp 101
-neighbor 10.0.0.9 remote-as 100
-neighbor 10.0.0.14 remote-as 102
-neighbor 10.0.0.18 remote-as 103
+neighbor 10.0.0.1 remote-as 100
+neighbor 10.0.0.6 remote-as 102
+neighbor 10.0.0.9 remote-as 103
 network 192.168.1.0 mask 255.255.255.0
 ```
+
 ## AS 102
 ```
   10.0.0.0/30 is subnetted, 2 subnets
 C     10.0.0.0 is directly connected, FastEthernet1/0
-C    10.0.0.12 is directly connected, FastEthernet6/0
+C     10.0.0.12 is directly connected, FastEthernet6/0
 
 B 192.168.0.0/24 [20/0] via 10.0.0.1, 00:00:00
 B 192.168.1.0/24 [20/0] via 10.0.0.13, 00:00:00
 C 192.168.2.0/24 is directly connected, FastEthernet0/0
 B 192.168.3.0/24 [20/0] via 10.0.0.13, 00:00:00
 ```
+
 ## AS 103
 ```
   10.0.0.0/30 is subnetted, 2 subnets
@@ -92,6 +97,8 @@ B 192.168.1.0/24 [20/0] via 10.0.0.17, 00:00:00
 B 192.168.2.0/24 [20/0] via 10.0.0.17, 00:00:00
 C 192.168.3.0/24 is directly connected, FastEthernet0/0
 ```
+
+## Вывод информации о пирах (neighbor) с edge маршрутизатора AS 100
 
 ```
 Router>show ip bgp summary
@@ -111,7 +118,6 @@ Neighbor   V  AS    MsgRcvd   MsgSent  TblVer  InQ  OutQ  Up/Down    State/PfxRc
 10.0.0.2   4  102    174      154      30      0    0     00:26:27   4
 10.0.0.6   4  103    168      151      30      0    0     00:26:27   4
 10.0.0.10  4  101    58       168      30      0    0     00:28:11   4
-
 ```
 
 
@@ -119,6 +125,8 @@ Neighbor   V  AS    MsgRcvd   MsgSent  TblVer  InQ  OutQ  Up/Down    State/PfxRc
 
 ## Вопрос 1
 _Поясните результаты, полученные в Части 5, п.8_
+
+> Провидите трассировку маршрута между компьютерами из всех AS. При трассировке из AS 101 и 102 задействуете по одному компьютеру из LAN1 и LAN5.
 
 ```
 C: \>tracert 192.168.2.2
